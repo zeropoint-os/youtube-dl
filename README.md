@@ -48,6 +48,8 @@ The install is performed using Docker-in-Docker.
 | `zp_gpu_vendor` | string | GPU vendor supplied by Zeropoint (unused) | `""` |
 | `zp_module_dir` | string | Agent's working directory for this module (injected by zeropoint) | (required) |
 | `zp_storage_dir` | string | Isolated persistent data root for this module (injected by zeropoint) | (required) |
+| `audio_path` | string | Optional host path for audio downloads | `null` |
+| `video_path` | string | Optional host path for video downloads | `null` |
 | `container_uid` | number | UID used by the container | `1000` |
 | `container_gid` | number | GID used by the container | `1000` |
 
@@ -61,7 +63,7 @@ The install is performed using Docker-in-Docker.
 
 ## Data and database
 
-The module uses YoutubeDL-Material's local JSON database, so it does not require a separate MongoDB container. It persists app data, audio, video, subscriptions, and user data in `zp_storage_dir`. Container UID and GID default to `1000` and can be overridden with `container_uid` and `container_gid`.
+The module uses YoutubeDL-Material's local JSON database, so it does not require a separate MongoDB container. App data, subscriptions, and user data remain under `zp_storage_dir`. Audio and video default to `${zp_storage_dir}/audio` and `${zp_storage_dir}/video`; set `audio_path` or `video_path` to use another host path for either download directory. Container UID and GID default to `1000` and can be overridden with `container_uid` and `container_gid`.
 
 ## Network & Service Discovery
 

@@ -40,6 +40,18 @@ variable "zp_storage_dir" {
   description = "Isolated data root for this module; persistent bind mounts must live under this path"
 }
 
+variable "audio_path" {
+  type        = string
+  default     = null
+  description = "Optional host path for audio downloads; defaults to the module storage directory"
+}
+
+variable "video_path" {
+  type        = string
+  default     = null
+  description = "Optional host path for video downloads; defaults to the module storage directory"
+}
+
 variable "container_uid" {
   type        = number
   default     = 1000
@@ -80,12 +92,12 @@ resource "docker_container" "youtube_dl_material_main" {
   }
 
   volumes {
-    host_path      = "${var.zp_storage_dir}/audio"
+    host_path      = var.audio_path != null ? var.audio_path : "${var.zp_storage_dir}/audio"
     container_path = "/app/audio"
   }
 
   volumes {
-    host_path      = "${var.zp_storage_dir}/video"
+    host_path      = var.video_path != null ? var.video_path : "${var.zp_storage_dir}/video"
     container_path = "/app/video"
   }
 
