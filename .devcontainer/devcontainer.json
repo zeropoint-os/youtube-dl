@@ -1,5 +1,5 @@
 {
-	"name": "ollama",
+	"name": "youtube-dl-material",
 	"build": {
 		"dockerfile": "dev.Dockerfile",
 		"context": ".."
