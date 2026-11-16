@@ -1,20 +1,17 @@
-# Ollama zeropoint app
+# YoutubeDL-Material Zeropoint module
 
-This module defines the Ollama app for zeropoint os using Terraform and the Docker provider.
+This Terraform module deploys [YoutubeDL-Material](https://github.com/Tzahi12345/YoutubeDL-Material), a self-hosted web interface for downloading videos and audio.
 
 ## Resources Created
 
-- **Docker Image**: Builds from local `Dockerfile` with platform-specific targeting
-- **Docker Container**: Ollama server with optional GPU support
+- **Docker Image**: Pulls the official `tzahi12345/youtubedl-material` image
+- **Docker Container**: YoutubeDL-Material web application on the Zeropoint network
+- **Persistent data**: Application configuration, downloads, subscriptions, and users under `zp_storage_dir`
 
 ## Requirements
 
 - Terraform >= 1.0
 - Docker provider ~> 3.0
-- GPU support (optional):
-  - NVIDIA: NVIDIA Container Runtime
-  - AMD: ROCm drivers
-  - Intel: Intel GPU drivers
 
 ## Usage
 
@@ -24,10 +21,8 @@ This module defines the Ollama app for zeropoint os using Terraform and the Dock
 curl -X POST http://<zeropoint-node-name>:2370/modules/install \
   -H "Content-Type: application/json" \
   -d '{
-    "source": "https://github.com/zeropoint-os/ollama.git", 
-    "module_id": "ollama",
-    "arch": "arm64",
-    "gpu_vendor": "nvidia"
+    "source": "https://github.com/zeropoint-os/youtube-dl.git",
+    "module_id": "youtube-dl-material"
   }'
 ```
 
@@ -37,52 +32,50 @@ Use Run task (Shift+Alt+T)
 1. Full test - setup and apply
 2. Full test - cleanup
 
-The install will be performed using Docker-in-Docker.
+The install is performed using Docker-in-Docker.
 
 ## Inputs
 
 | Name | Type | Description | Default |
 |------|------|-------------|---------|
-| `zp_app_id` | string | Unique identifier for this app instance (injected by zeropoint) | `"ollama"` |
+| `zp_module_id` | string | Unique identifier for this module instance (injected by Zeropoint) | `"youtube-dl-material"` |
 | `zp_network_name` | string | Pre-created Docker network name (injected by zeropoint) | (required) |
-| `zp_arch` | string | Target architecture: amd64, arm64, etc. (injected by zeropoint) | `"amd64"` |
-| `zp_gpu_vendor` | string | GPU vendor: nvidia, amd, intel, or empty for no GPU (injected by zeropoint) | `""` |
-| `zp_module_dir` | string | Agent's working directory for this module — terraform state + cloned source (injected by zeropoint) | (required) |
-| `zp_storage_dir` | string | Isolated data root for this module — all bind mounts must live under here (injected by zeropoint) | (required) |
+| `zp_arch` | string | Target architecture supplied by Zeropoint | `"amd64"` |
+| `zp_gpu_vendor` | string | GPU vendor supplied by Zeropoint (unused) | `""` |
+| `zp_module_dir` | string | Agent's working directory for this module (injected by zeropoint) | (required) |
+| `zp_storage_dir` | string | Isolated persistent data root for this module (injected by zeropoint) | (required) |
+| `container_uid` | number | UID used by the container | `1000` |
+| `container_gid` | number | GID used by the container | `1000` |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| `main` | Main Ollama container resource (docker_container) |
+| `main` | YoutubeDL-Material container resource |
+| `main_ports` | Web interface port metadata |
+| `youtube_dl_material_url` | Web interface URL accessible via the Docker network |
 
-## GPU Support
+## Data and database
 
-This module supports multiple GPU vendors:
-
-- **NVIDIA**: Sets `runtime = "nvidia"` and `gpus = "all"`
-- **AMD/Intel**: Sets `gpus = "all"` (uses default runtime with device access)
-- **No GPU**: Both runtime and gpus set to null (CPU-only mode)
-
-The GPU vendor is auto-detected by zeropoint and injected via the `gpu_vendor` variable.
+The module uses YoutubeDL-Material's local JSON database, so it does not require a separate MongoDB container. It persists app data, audio, video, subscriptions, and user data in `zp_storage_dir`. Container UID and GID default to `1000` and can be overridden with `container_uid` and `container_gid`.
 
 ## Network & Service Discovery
 
-- **Internal Port**: 11434 (Ollama API)
+- **Internal Port**: 17442 (web interface)
 - **Network**: Uses pre-created network provided by zeropoint via `zp_network_name`
 - **No Host Ports**: Service discovery via DNS only
-- **Container Name**: `${zp_module_id}-main` (e.g., `ollama-main`)
+- **Container Name**: `${zp_module_id}-main` (e.g., `youtube-dl-material-main`)
 
-## Accessing Ollama
+## Accessing YoutubeDL-Material
 
 ### From Other Containers (Service Discovery)
 
-Other apps linked to Ollama can access it via DNS:
+Other apps on the same network can access the web interface via its container name:
 
 ```bash
-curl http://ollama-main:11434/api/tags
+curl http://youtube-dl-material-main:17442/
 ```
 
 ### From Host (via Exposure)
 
-External access requires creating an exposure through zeropoint API.
+External access requires creating an exposure through the Zeropoint API.
