@@ -4,9 +4,13 @@ This Terraform module deploys [YoutubeDL-Material](https://github.com/Tzahi12345
 
 ## Resources Created
 
-- **Docker Image**: Pulls the official `tzahi12345/youtubedl-material` image
+- **Docker Image**: Pulls the actively maintained `voc0der/ytdl-material` release v1.3.5
 - **Docker Container**: YoutubeDL-Material web application on the Zeropoint network
 - **Persistent data**: Application configuration, downloads, subscriptions, and users under `zp_storage_dir`
+
+The image is pinned immutably by its multi-architecture manifest digest:
+`voc0der/ytdl-material@sha256:539537413dce9279a5b9ee030320eb22792a2f20673d1f566a6521b9becf124b`.
+Deployments therefore remain on the verified v1.3.5 release instead of following a mutable tag.
 
 ## Requirements
 

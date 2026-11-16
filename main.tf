@@ -53,7 +53,7 @@ variable "container_gid" {
 }
 
 resource "docker_image" "youtube_dl_material" {
-  name         = "tzahi12345/youtubedl-material:latest"
+  name         = "voc0der/ytdl-material@sha256:539537413dce9279a5b9ee030320eb22792a2f20673d1f566a6521b9becf124b"
   keep_locally = true
 }
 
