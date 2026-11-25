@@ -1,6 +1,6 @@
 # YoutubeDL-Material Zeropoint module
 
-This Terraform module deploys [YoutubeDL-Material](https://github.com/Tzahi12345/YoutubeDL-Material), a self-hosted web interface for downloading videos and audio.
+This Terraform module deploys the actively maintained [voc0der/ytdl-material](https://github.com/voc0der/ytdl-material) runtime, a self-hosted web interface for downloading videos and audio.
 
 ## Resources Created
 
@@ -22,11 +22,15 @@ Deployments therefore remain on the verified v1.3.5 release instead of following
 ### Via zeropoint API
 
 ```bash
-curl -X POST http://<zeropoint-node-name>:2370/modules/install \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "https://github.com/zeropoint-os/youtube-dl.git",
-    "module_id": "youtube-dl-material"
+curl --request POST http://<zeropoint-node-name>:2370/api/modules \
+  --header "Content-Type: application/json" \
+  --data '{
+    "source": "https://github.com/zeropoint-os/youtube-dl.git@<40-character-commit-sha>",
+    "overrides": {
+      "audio_path": "/path/to/audio",
+      "video_path": "/path/to/video"
+    },
+    "resolve": true
   }'
 ```
 
