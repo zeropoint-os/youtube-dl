@@ -1,12 +1,16 @@
 # YoutubeDL-Material Zeropoint module
 
-This Terraform module deploys [YoutubeDL-Material](https://github.com/Tzahi12345/YoutubeDL-Material), a self-hosted web interface for downloading videos and audio.
+This Terraform module deploys the actively maintained [voc0der/ytdl-material](https://github.com/voc0der/ytdl-material) runtime, a self-hosted web interface for downloading videos and audio.
 
 ## Resources Created
 
-- **Docker Image**: Pulls the official `tzahi12345/youtubedl-material` image
+- **Docker Image**: Pulls the actively maintained `voc0der/ytdl-material` release v1.3.5
 - **Docker Container**: YoutubeDL-Material web application on the Zeropoint network
 - **Persistent data**: Application configuration, downloads, subscriptions, and users under `zp_storage_dir`
+
+The image is pinned immutably by its multi-architecture manifest digest:
+`voc0der/ytdl-material@sha256:539537413dce9279a5b9ee030320eb22792a2f20673d1f566a6521b9becf124b`.
+Deployments therefore remain on the verified v1.3.5 release instead of following a mutable tag.
 
 ## Requirements
 
@@ -18,11 +22,15 @@ This Terraform module deploys [YoutubeDL-Material](https://github.com/Tzahi12345
 ### Via zeropoint API
 
 ```bash
-curl -X POST http://<zeropoint-node-name>:2370/modules/install \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "https://github.com/zeropoint-os/youtube-dl.git",
-    "module_id": "youtube-dl-material"
+curl --request POST http://<zeropoint-node-name>:2370/api/modules \
+  --header "Content-Type: application/json" \
+  --data '{
+    "source": "https://github.com/zeropoint-os/youtube-dl.git@<40-character-commit-sha>",
+    "overrides": {
+      "audio_path": "/path/to/audio",
+      "video_path": "/path/to/video"
+    },
+    "resolve": true
   }'
 ```
 
@@ -44,6 +52,8 @@ The install is performed using Docker-in-Docker.
 | `zp_gpu_vendor` | string | GPU vendor supplied by Zeropoint (unused) | `""` |
 | `zp_module_dir` | string | Agent's working directory for this module (injected by zeropoint) | (required) |
 | `zp_storage_dir` | string | Isolated persistent data root for this module (injected by zeropoint) | (required) |
+| `audio_path` | string | Optional host path for audio downloads | `null` |
+| `video_path` | string | Optional host path for video downloads | `null` |
 | `container_uid` | number | UID used by the container | `1000` |
 | `container_gid` | number | GID used by the container | `1000` |
 
@@ -57,7 +67,7 @@ The install is performed using Docker-in-Docker.
 
 ## Data and database
 
-The module uses YoutubeDL-Material's local JSON database, so it does not require a separate MongoDB container. It persists app data, audio, video, subscriptions, and user data in `zp_storage_dir`. Container UID and GID default to `1000` and can be overridden with `container_uid` and `container_gid`.
+The module uses YoutubeDL-Material's local JSON database, so it does not require a separate MongoDB container. App data, subscriptions, and user data remain under `zp_storage_dir`. Audio and video default to `${zp_storage_dir}/audio` and `${zp_storage_dir}/video`; set `audio_path` or `video_path` to use another host path for either download directory. Container UID and GID default to `1000` and can be overridden with `container_uid` and `container_gid`.
 
 ## Network & Service Discovery
 
